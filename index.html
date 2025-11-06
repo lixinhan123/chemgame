@@ -1,0 +1,2989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学卧底</title>
+    <style>
+        /* 样式部分保持不变，与原始代码相同 */
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #6b8cbc;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --chemist: #4a9c78;
+            --undercover: #c44545;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            display: flex;
+            gap: 20px;
+            height: 70vh;
+        }
+        
+        .left-panel {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .right-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .game-log {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            padding: 12px 15px;
+            border-radius: 12px;
+            max-width: 85%;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+            white-space: pre-line;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .system-message {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-style: italic;
+            text-align: center;
+            max-width: 95%;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+        
+        .player-message {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-bottom-left-radius: 5px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .error-message {
+            align-self: center;
+            background: rgba(220, 53, 69, 0.3);
+            color: white;
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            max-width: 95%;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-area input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .input-area input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .input-area input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .input-area input.error {
+            border: 2px solid var(--danger);
+            background: rgba(220, 53, 69, 0.1);
+        }
+        
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .btn-start {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-size: 1.1rem;
+            padding: 18px 30px;
+        }
+        
+        .btn-start:hover {
+            background: #34ce57;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .game-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .my-concept {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+        
+        .concept-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--light);
+        }
+        
+        .concept-role {
+            font-size: 1rem;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 5px;
+            opacity: 0;
+            height: 0;
+            transition: all 0.5s ease;
+        }
+        
+        .concept-role.revealed {
+            opacity: 1;
+            height: auto;
+            margin-top: 10px;
+        }
+        
+        .role-chemist {
+            background: var(--chemist);
+        }
+        
+        .role-undercover {
+            background: var(--undercover);
+        }
+        
+        .rules {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
+        
+        .rules h3 {
+            margin-bottom: 15px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rules-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .rule-item {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .rule-number {
+            background: var(--accent);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .player-cards {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+        
+        .player-card {
+            width: 120px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .player-card.active {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .player-card.voting {
+            border: 2px solid var(--warning);
+        }
+        
+        .player-card.voted {
+            border: 2px solid var(--success);
+        }
+        
+        .player-card.eliminated {
+            opacity: 0.5;
+            background: rgba(255, 255, 255, 0.05);
+            filter: grayscale(70%);
+        }
+        
+        .player-card.tie {
+            border: 2px solid var(--accent);
+            animation: pulseTie 1.5s infinite;
+        }
+        
+        .player-card.unavailable {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulseTie {
+            0% { border-color: var(--accent); }
+            50% { border-color: var(--warning); }
+            100% { border-color: var(--accent); }
+        }
+        
+        .vote-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .player-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .player-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .player-status {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        .status-dot.thinking {
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .start-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .start-description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .player-name-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        
+        .player-name-input input {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            width: 250px;
+            text-align: center;
+        }
+        
+        .player-name-input input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .player-name-input input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .victory-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .victory-content {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .victory-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .victory-message {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .victory-stats {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .victory-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* 知识点选择样式优化 */
+        .knowledge-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+            max-width: 700px;
+            width: 100%;
+        }
+        
+        .knowledge-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: white;
+            text-align: center;
+        }
+        
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        .knowledge-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .knowledge-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .knowledge-card.selected {
+            background: rgba(74, 111, 165, 0.3);
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .knowledge-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .knowledge-card-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .knowledge-card.selected .knowledge-card-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .knowledge-card.selected .knowledge-card-checkbox::after {
+            content: "✓";
+            color: white;
+            font-weight: bold;
+        }
+        
+        .knowledge-card-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .knowledge-card-concepts {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            line-height: 1.4;
+            display: none; /* 隐藏具体词汇 */
+        }
+        
+        .select-all {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        /* 知识点总结模态框 */
+        .summary-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .summary-content {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: left;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .summary-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+        }
+        
+        .summary-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+        
+        .summary-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* 移动设备优化 */
+        .mobile-controls {
+            display: none;
+        }
+        
+        .voting-toggle {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .player-cards {
+                justify-content: space-around;
+                max-height: 0;
+                overflow: hidden;
+                padding: 0;
+                margin-top: 0;
+                opacity: 0;
+            }
+            
+            .player-cards.expanded {
+                max-height: 500px;
+                padding: 10px;
+                margin-top: 10px;
+                opacity: 1;
+            }
+            
+            .voting-toggle {
+                display: flex;
+                justify-content: center;
+                margin-top: 10px;
+            }
+            
+            .mobile-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .mobile-controls .btn {
+                flex: 1;
+                min-width: 120px;
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .start-title {
+                font-size: 2rem;
+            }
+            
+            .start-description {
+                font-size: 1rem;
+            }
+            
+            .victory-title {
+                font-size: 2rem;
+            }
+            
+            .victory-message {
+                font-size: 1rem;
+            }
+            
+            .knowledge-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .victory-buttons {
+                flex-direction: column;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            .player-card {
+                width: 100px;
+                height: 130px;
+            }
+            
+            .player-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .player-name {
+                font-size: 0.8rem;
+            }
+            
+            .player-status {
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                gap: 15px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            .game-log, .game-info, .rules {
+                padding: 15px;
+            }
+            
+            .player-card {
+                width: 85px;
+                height: 120px;
+            }
+            
+            .player-avatar {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+            
+            .player-name {
+                font-size: 0.75rem;
+            }
+            
+            .player-status {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="startScreen" class="start-screen">
+            <h1 class="start-title">🧪 化学卧底</h1>
+            <p class="start-description">
+                通过描述化学概念，找出隐藏的卧底！请先选择你想要练习的知识点。
+            </p>
+            
+            <div class="player-name-input">
+                <input type="text" id="playerNameInput" placeholder="请输入你的昵称或姓名" maxlength="20">
+            </div>
+            
+            <div class="knowledge-selection">
+                <h3 class="knowledge-title">📚 选择知识点</h3>
+                <div class="knowledge-grid" id="knowledgeGrid">
+                    <!-- 知识点卡片将在这里动态生成 -->
+                </div>
+                <div class="select-all">
+                    <button class="btn btn-secondary" onclick="selectAllKnowledge()">
+                        <span>✓</span> 全选
+                    </button>
+                    <button class="btn btn-secondary" onclick="deselectAllKnowledge()">
+                        <span>✗</span> 全不选
+                    </button>
+                </div>
+            </div>
+            
+            <button class="btn btn-start" onclick="startNewGame()">
+                <span>🎮</span> 开启游戏
+            </button>
+        </div>
+        
+        <div id="gameScreen" style="display: none;">
+            <header>
+                <h1>🧪 化学卧底</h1>
+                <p class="tagline">通过描述化学概念，找出隐藏的卧底！</p>
+                <div class="mobile-controls">
+                    <button class="btn btn-secondary" onclick="showRules()">
+                        <span>📋</span> 规则
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearChat()">
+                        <span>🗑️</span> 清空
+                    </button>
+                    <button class="btn btn-secondary" onclick="restartGame()">
+                        <span>🔄</span> 重开
+                    </button>
+                </div>
+            </header>
+            
+            <div class="game-area">
+                <div class="left-panel">
+                    <div class="game-log" id="gameLog">
+                        <!-- 游戏日志将在这里动态生成 -->
+                    </div>
+                    
+                    <div class="input-area">
+                        <input type="text" id="playerInput" placeholder="请输入你的描述..." autocomplete="off" disabled maxlength="100">
+                        <button class="btn btn-primary" onclick="sendMessage()" id="sendBtn" disabled>
+                            <span>发送</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="right-panel">
+                    <div class="game-info">
+                        <h2 class="info-title">🎯 我的词卡</h2>
+                        <div class="status-indicator">
+                            <div class="status-dot" id="statusDot"></div>
+                            <span id="statusText">等待游戏开始</span>
+                        </div>
+                        
+                        <div class="my-concept">
+                            <div>你的概念是：</div>
+                            <div class="concept-name" id="myConcept">等待分配...</div>
+                            <div class="concept-role" id="myRole">游戏结束后揭示</div>
+                        </div>
+                    </div>
+                    
+                    <div class="rules">
+                        <h3>📖 游戏规则</h3>
+                        <div class="rules-list">
+                            <div class="rule-item">
+                                <div class="rule-number">1</div>
+                                <div>玩家依次用一句话描述自己拿到的化学概念，描述不能直接说出完整的概念名称，所有玩家描述完毕后进行投票，找出卧底</div>
+                            </div>
+                            <div class="rule-item">
+                                <div class="rule-number">2</div>
+                                <div>平票时，平票玩家进行额外描述，然后重新投票；如平票达3次，随机淘汰一名平票选手</div>
+                            </div>
+                            <div class="rule-item">
+                                <div class="rule-number">3</div>
+                                <div>如果卧底坚持到最后，卧底获胜；否则化学家获胜</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="voting-toggle">
+                <button class="btn btn-secondary" onclick="toggleVotingCards()">
+                    <span id="votingToggleIcon">👥</span> <span id="votingToggleText">显示玩家卡片</span>
+                </button>
+            </div>
+            
+            <div class="player-cards" id="playerCards">
+                <div class="player-card" id="player1" data-player-index="0">
+                    <div class="player-avatar">👨‍🔬</div>
+                    <div class="player-name" id="player1Name">你</div>
+                    <div class="player-status">等待游戏开始</div>
+                </div>
+                <div class="player-card" id="player2" data-player-index="1">
+                    <div class="player-avatar">👩‍🔬</div>
+                    <div class="player-name">实验小李</div>
+                    <div class="player-status">等待中</div>
+                </div>
+                <div class="player-card" id="player3" data-player-index="2">
+                    <div class="player-avatar">🧑‍🔬</div>
+                    <div class="player-name">反应小张</div>
+                    <div class="player-status">等待中</div>
+                </div>
+                <div class="player-card" id="player4" data-player-index="3">
+                    <div class="player-avatar">👨‍💼</div>
+                    <div class="player-name">元素小赵</div>
+                    <div class="player-status">等待中</div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>化学卧底游戏 - - 使用DeepSeek API驱动 | 辅助中学化学教学</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="victoryScreen" class="victory-screen">
+        <div class="victory-content">
+            <h2 class="victory-title" id="victoryTitle">🎉 恭喜获胜！</h2>
+            <p class="victory-message" id="victoryMessage">你已获得1场胜利，成为化学卧底大师！</p>
+            
+            <div class="victory-stats" id="victoryStats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalWins">0</div>
+                    <div class="stat-label">总胜利场数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalRounds">0</div>
+                    <div class="stat-label">总局数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-label">胜率</div>
+                </div>
+            </div>
+            
+            <div class="victory-buttons">
+                <button class="btn btn-start" onclick="saveVictory()" id="saveVictoryBtn">
+                    <span>💾</span> 保存胜利记录
+                </button>
+                <button class="btn btn-secondary" onclick="showSummary()">
+                    <span>📚</span> 查看知识点总结
+                </button>
+                <button class="btn btn-secondary" onclick="closeVictoryScreen()">
+                    <span>🔙</span> 返回游戏
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="summaryModal" class="summary-modal">
+        <div class="summary-content">
+            <h2 class="summary-title">📚 知识点总结</h2>
+            <div class="summary-text" id="summaryText">
+                <!-- 知识点总结将在这里显示 -->
+            </div>
+            <div class="summary-buttons">
+                <button class="btn btn-start" onclick="saveSummary()">
+                    <span>💾</span> 保存总结
+                </button>
+                <button class="btn btn-secondary" onclick="closeSummary()">
+                    <span>✕</span> 关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG_DATA = {
+            a: 'sk-4811bc1da0b54f27a831fca660288c1f',
+            b: 'sk-237aefdf550f41b3a380f5b947b9ea24',
+            c: 'sk-7ee245209cb3419f8e8850a0988880a1',
+            d: 'sk-32f8bc6fcd4447dcbd2e59ba9c3e5294'
+        };
+        
+        const API_BASE_URL = 'https://api.deepseek.com/v1/chat/completions';
+        
+        // DOM元素
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const victoryScreen = document.getElementById('victoryScreen');
+        const summaryModal = document.getElementById('summaryModal');
+        const gameLog = document.getElementById('gameLog');
+        const playerInput = document.getElementById('playerInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const myConcept = document.getElementById('myConcept');
+        const myRole = document.getElementById('myRole');
+        const victoryMessage = document.getElementById('victoryMessage');
+        const victoryTitle = document.getElementById('victoryTitle');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const player1Name = document.getElementById('player1Name');
+        const knowledgeGrid = document.getElementById('knowledgeGrid');
+        const summaryText = document.getElementById('summaryText');
+        const playerCards = document.getElementById('playerCards');
+        const votingToggleIcon = document.getElementById('votingToggleIcon');
+        const votingToggleText = document.getElementById('votingToggleText');
+        const saveVictoryBtn = document.getElementById('saveVictoryBtn');
+        const victoryStats = document.getElementById('victoryStats');
+        const totalWins = document.getElementById('totalWins');
+        const totalRounds = document.getElementById('totalRounds');
+        const winRate = document.getElementById('winRate');
+        
+        // 知识点库
+        const knowledgePoints = [
+            {
+                id: 1,
+                name: "物质分类",
+                concepts: [
+                    "纯净物、混合物",
+                    "单质、化合物",
+                    "酸、碱",
+                    "酸性氧化物、碱性氧化物",
+                    "有机物、无机物",
+                    "溶液、乳浊液"
+                ]
+            },
+            {
+                id: 2,
+                name: "物质性质与变化",
+                concepts: [
+                    "物理变化、化学变化",
+                    "物理性质、化学性质",
+                    "蒸发、沸腾",
+                    "催化、氧化",
+                    "溶解、熔化",
+                    "化合反应、分解反应"
+                ]
+            },
+            {
+                id: 3,
+                name: "常见物质与微粒",
+                concepts: [
+                    "分子、原子",
+                    "原子、离子",
+                    "二氧化碳、一氧化碳",
+                    "氧气、臭氧",
+                    "生石灰、熟石灰",
+                    "金刚石、石墨"
+                ]
+            },
+            {
+                id: 4,
+                name: "化学实验与操作",
+                concepts: [
+                    "蒸发、蒸馏",
+                    "点燃、加热",
+                    "烟、雾",
+                    "长颈漏斗、分液漏斗",
+                    "药匙、镊子",
+                    "溶解、过滤"
+                ]
+            },
+            {
+                id: 5,
+                name: "化学肥料",
+                concepts: [
+                    "氮肥、磷肥",
+                    "铵盐、尿素",
+                    "氨水、硝酸铵"
+                ]
+            },
+            {
+                id: 6,
+                name: "化学原理与概念",
+                concepts: [
+                    "电离、电解",
+                    "原电池、电解池",
+                    "化合价、氧化数",
+                    "化学键、分子间作用力",
+                    "离子键、共价键",
+                    "结晶、沉淀"
+                ]
+            },
+            {
+                id: 7,
+                name: "化学反应与平衡",
+                concepts: [
+                    "化合反应、氧化还原反应",
+                    "电离平衡、水解平衡",
+                    "勒夏特列原理、化学反应速率",
+                    "可逆反应、动态平衡",
+                    "活化能、反应热",
+                    "中和反应、盐类水解"
+                ]
+            },
+            {
+                id: 8,
+                name: "元素及其化合物",
+                concepts: [
+                    "盐酸、硫酸",
+                    "硝酸、醋酸",
+                    "氧化铝、氢氧化铝",
+                    "过氧化钠、氧化钠",
+                    "二氧化硫、二氧化碳",
+                    "铁、铝"
+                ]
+            },
+            {
+                id: 9,
+                name: "有机化学基础",
+                concepts: [
+                    "烷烃、烯烃",
+                    "醇、酚",
+                    "羧酸、酯",
+                    "葡萄糖、果糖",
+                    "苯、甲苯",
+                    "加成反应、取代反应"
+                ]
+            },
+            {
+                id: 10,
+                name: "化学实验与仪器",
+                concepts: [
+                    "滴定管、量筒",
+                    "圆底烧瓶、锥形瓶",
+                    "坩埚、蒸发皿",
+                    "渗析、盐析",
+                    "洗气、干燥",
+                    "分液、萃取"
+                ]
+            }
+        ];
+        
+        // 游戏状态
+        let gameState = {
+            currentPlayer: 0,
+            players: [
+                { name: '你', avatar: '👨‍🔬', status: '等待描述', concept: '', role: '', votes: 0, eliminated: false },
+                { name: '实验小李', avatar: '👩‍🔬', status: '等待中', concept: '', role: '', votes: 0, eliminated: false },
+                { name: '反应小张', avatar: '🧑‍🔬', status: '等待中', concept: '', role: '', votes: 0, eliminated: false },
+                { name: '元素小赵', avatar: '👨‍💼', status: '等待中', concept: '', role: '', votes: 0, eliminated: false }
+            ],
+            gamePhase: 'setup',
+            concepts: [],
+            usedConceptPairs: [],
+            currentAIPlayerIndex: 1,
+            userVoted: false,
+            aiVotes: [],
+            roleRevealed: false,
+            playerWins: 0,
+            totalRounds: 0,
+            tiePlayers: [],
+            tieRound: 0,
+            maxTieRounds: 3,
+            roundNumber: 1,
+            waitingForUserTieDescription: null,
+            selectedKnowledgePoints: [],
+            currentConcepts: {},
+            knowledgeSummary: '',
+            isMobile: window.innerWidth <= 768,
+            tieCount: 0,
+            playerWon: false,
+            // 新增：投票记录数组
+            currentVoteRecords: []
+        };
+        
+        // 所有玩家的描述记录
+        let playerDescriptions = [];
+        
+        // 初始化知识点选择
+        function initializeKnowledgeSelection() {
+            knowledgeGrid.innerHTML = '';
+            knowledgePoints.forEach(point => {
+                const card = document.createElement('div');
+                card.className = 'knowledge-card';
+                card.setAttribute('data-id', point.id);
+                card.innerHTML = `
+                    <div class="knowledge-card-header">
+                        <div class="knowledge-card-checkbox"></div>
+                        <div class="knowledge-card-name">${point.name}</div>
+                    </div>
+                    <div class="knowledge-card-concepts">${point.concepts.join('，')}</div>
+                `;
+                card.addEventListener('click', () => toggleKnowledgeCard(card));
+                knowledgeGrid.appendChild(card);
+            });
+        }
+        
+        // 切换知识点卡片选择状态
+        function toggleKnowledgeCard(card) {
+            card.classList.toggle('selected');
+        }
+        
+        // 获取选中的知识点
+        function getSelectedKnowledgePoints() {
+            const selected = [];
+            document.querySelectorAll('.knowledge-card.selected').forEach(card => {
+                const id = parseInt(card.getAttribute('data-id'));
+                const point = knowledgePoints.find(p => p.id === id);
+                if (point) selected.push(point);
+            });
+            return selected;
+        }
+        
+        // 全选知识点
+        function selectAllKnowledge() {
+            document.querySelectorAll('.knowledge-card').forEach(card => {
+                card.classList.add('selected');
+            });
+        }
+        
+        // 全不选知识点
+        function deselectAllKnowledge() {
+            document.querySelectorAll('.knowledge-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+        
+        // 获取选定知识点中的所有概念对
+        function getConceptPairsFromSelectedKnowledge() {
+            const selectedPoints = gameState.selectedKnowledgePoints;
+            let conceptPairs = [];
+            
+            selectedPoints.forEach(point => {
+                point.concepts.forEach(conceptPair => {
+                    const [chemist, undercover] = conceptPair.split('、');
+                    conceptPairs.push({ chemist, undercover });
+                });
+            });
+            
+            return conceptPairs;
+        }
+        
+        // 更新状态指示器
+        function updateStatus(text, isThinking = false) {
+            statusText.textContent = text;
+            if (isThinking) {
+                statusDot.classList.add('thinking');
+            } else {
+                statusDot.classList.remove('thinking');
+            }
+        }
+        
+        // 更新玩家卡片状态
+        function updatePlayerCards() {
+            gameState.players.forEach((player, index) => {
+                const card = document.getElementById(`player${index+1}`);
+                const statusEl = card.querySelector('.player-status');
+                
+                statusEl.textContent = player.status;
+                
+                // 移除所有状态类
+                card.classList.remove('active', 'voting', 'voted', 'eliminated', 'tie', 'unavailable');
+                
+                // 添加适当的状态类
+                if (!player.eliminated && index === gameState.currentPlayer && 
+                    (gameState.gamePhase === 'describing' || gameState.gamePhase === 'tie-describing')) {
+                    card.classList.add('active');
+                }
+                
+                if (!player.eliminated && 
+                    (gameState.gamePhase === 'voting' || gameState.gamePhase === 'tie-voting') && 
+                    index !== 0) {
+                    card.classList.add('voting');
+                }
+                
+                if (player.eliminated) {
+                    card.classList.add('eliminated');
+                    card.classList.add('unavailable');
+                }
+                
+                // 如果是平票玩家且未被淘汰，添加特殊样式
+                if (!player.eliminated && gameState.tiePlayers.includes(index)) {
+                    card.classList.add('tie');
+                }
+                
+                // 更新投票指示器
+                const existingIndicator = card.querySelector('.vote-indicator');
+                if (existingIndicator) {
+                    card.removeChild(existingIndicator);
+                }
+                
+                if (player.votes > 0) {
+                    const voteIndicator = document.createElement('div');
+                    voteIndicator.className = 'vote-indicator';
+                    voteIndicator.textContent = player.votes;
+                    card.appendChild(voteIndicator);
+                }
+            });
+            
+            // 在移动设备上，如果是投票阶段，自动展开投票卡片
+            if (gameState.isMobile && (gameState.gamePhase === 'voting' || gameState.gamePhase === 'tie-voting')) {
+                expandVotingCards();
+            }
+        }
+        
+        // 展开投票卡片
+        function expandVotingCards() {
+            playerCards.classList.add('expanded');
+            votingToggleIcon.textContent = '👥';
+            votingToggleText.textContent = '隐藏玩家卡片';
+        }
+        
+        // 折叠投票卡片
+        function collapseVotingCards() {
+            playerCards.classList.remove('expanded');
+            votingToggleIcon.textContent = '👥';
+            votingToggleText.textContent = '显示玩家卡片';
+        }
+        
+        // 切换投票卡片显示状态
+        function toggleVotingCards() {
+            if (playerCards.classList.contains('expanded')) {
+                collapseVotingCards();
+            } else {
+                expandVotingCards();
+            }
+        }
+        
+        // 将消息添加到游戏日志
+        function addMessage(sender, message, type) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}-message`;
+            
+            let senderText = sender;
+            if (type === 'ai') senderText = 'AI主持人';
+            else if (type === 'user') senderText = gameState.players[0].name;
+            
+            messageElement.innerHTML = `<strong>${senderText}:</strong> ${message}`;
+            gameLog.appendChild(messageElement);
+            
+            // 自动滚动到底部
+            gameLog.scrollTop = gameLog.scrollHeight;
+            
+            return messageElement;
+        }
+        
+        // 添加系统提示消息
+        function addSystemMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message system-message`;
+            messageElement.innerHTML = `${message}`;
+            gameLog.appendChild(messageElement);
+            
+            // 自动滚动到底部
+            gameLog.scrollTop = gameLog.scrollHeight;
+            
+            return messageElement;
+        }
+        
+        // 添加玩家消息
+        function addPlayerMessage(playerName, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message player-message`;
+            messageElement.innerHTML = `<strong>${playerName}:</strong> ${message}`;
+            gameLog.appendChild(messageElement);
+            
+            // 自动滚动到底部
+            gameLog.scrollTop = gameLog.scrollHeight;
+            
+            return messageElement;
+        }
+        
+        // 添加错误消息
+        function addErrorMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message error-message`;
+            messageElement.innerHTML = `<strong>⚠️ 错误:</strong> ${message}`;
+            gameLog.appendChild(messageElement);
+            
+            // 自动滚动到底部
+            gameLog.scrollTop = gameLog.scrollHeight;
+            
+            return messageElement;
+        }
+        
+        // 验证用户描述
+        function validateDescription(description, concept) {
+            // 检查长度
+            if (description.length < 1) {
+                return { isValid: false, error: "描述不能为空" };
+            }
+            
+            if (description.length > 100) {
+                return { isValid: false, error: "描述不能超过100个字符" };
+            }
+            
+            // 检查是否包含完整的概念词
+            if (description.includes(concept)) {
+                return { 
+                    isValid: false, 
+                    error: `描述中不能直接包含完整的概念词"${concept}"` 
+                };
+            }
+            
+            // 检查敏感词
+            const sensitiveWords = ['卧底', '化学家', '投票', '淘汰', '游戏'];
+            const containsSensitiveWord = sensitiveWords.some(word => 
+                description.includes(word)
+            );
+            
+            if (containsSensitiveWord) {
+                return { 
+                    isValid: false, 
+                    error: "描述中不能包含游戏相关的敏感词" 
+                };
+            }
+            
+            return { isValid: true };
+        }
+        
+        // 调用DeepSeek API的通用函数
+        async function callDeepSeekAPI(prompt, apiKey, temperature = 0.7, maxTokens = 100) {
+            try {
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-chat",
+                        messages: [{ role: "user", content: prompt }],
+                        temperature: temperature,
+                        max_tokens: maxTokens,
+                        stream: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API请求失败: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.choices[0].message.content.trim();
+            } catch (error) {
+                console.error('API调用错误:', error);
+                throw error;
+            }
+        }
+        
+        // 生成知识点总结
+        async function generateKnowledgeSummary(chemistConcept, undercoverConcept) {
+            const prompt = `请简要总结以下两个化学概念：【${chemistConcept}】和【${undercoverConcept}】。总结分为三部分：
+1. 两个概念的定义和实例
+2. 两个概念的区别
+3. 简要总结
+
+请按照以下格式提供总结：
+定义和实例
+【${chemistConcept}】的定义和实例：[内容]
+【${undercoverConcept}】的定义和实例：[内容]
+
+概念区别
+【${chemistConcept}】和【${undercoverConcept}】的区别：[内容]
+
+简要总结
+[内容]
+
+注意：不要使用任何加粗或其他特殊标记，仅将两个概念用【】标注。`;
+            
+            try {
+                const summary = await callDeepSeekAPI(prompt, CONFIG_DATA.a, 0.5, 800);
+                
+                let formattedSummary = summary;
+                if (summary.includes("第二部分：")) {
+                    formattedSummary = summary.replace("第二部分：", "\n\n第二部分：");
+                }
+                if (summary.includes("第三部分：")) {
+                    formattedSummary = formattedSummary.replace("第三部分：", "\n\n第三部分：");
+                }
+                
+                gameState.knowledgeSummary = formattedSummary;
+                
+                console.log("知识点总结已生成并保存");
+                return formattedSummary;
+                
+            } catch (error) {
+                console.error('知识点总结失败:', error);
+                const fallbackSummary = `第一部分：定义和实例
+【${chemistConcept}】的定义和实例：这是一个重要的化学概念，在化学学习中占有重要地位。
+【${undercoverConcept}】的定义和实例：这也是一个重要的化学概念，与【${chemistConcept}】密切相关。
+
+第二部分：概念区别
+【${chemistConcept}】和【${undercoverConcept}】的区别：这两个概念在定义、性质和应用上有所不同。
+
+第三部分：简要总结
+这两个概念都是化学学习中的重要内容，需要认真理解和区分。`;
+                
+                gameState.knowledgeSummary = fallbackSummary;
+                console.log("知识点总结已生成并保存");
+                return fallbackSummary;
+            }
+        }
+        
+        // 显示知识点总结
+        function showKnowledgeSummary() {
+            return new Promise((resolve) => {
+                if (gameState.knowledgeSummary) {
+                    addMessage("AI主持人", gameState.knowledgeSummary, "ai");
+                    
+                    setTimeout(() => {
+                        resolve();
+                    }, 3000);
+                } else {
+                    resolve();
+                }
+            });
+        }
+        
+        // AI玩家描述提示词
+        const aiPlayerPrompt = (playerIndex, playerName, concept, previousDescriptions) => {
+            let prompt = `你现在是化学卧底游戏中的玩家"${playerName}"。
+你的化学概念是"${concept}"。
+
+游戏规则：
+1. 用一句话描述你的概念，不能直接说出完整的概念名称
+2. 描述要准确、科学，但也要有迷惑性
+3. 特别重要：你的描述必须与其他玩家的描述不同，避免使用相似的表述或角度`;
+
+            if (playerIndex === 1) {
+                prompt += `
+4. 你的描述应该侧重于这个概念在教材上涉及到的知识点`;
+            } else if (playerIndex === 2) {
+                prompt += `
+4. 你的描述应该侧重于这个概念在生活中的用途`;
+            } else if (playerIndex === 3) {
+                prompt += `
+4. 你的描述应该侧重于教材上对这个概念的定义`;
+            }
+
+            if (previousDescriptions.length > 0) {
+                prompt += `
+
+以下是其他玩家的描述：
+${previousDescriptions.map(desc => `- ${desc.player}: ${desc.description}`).join('\n')}
+
+请确保你的描述与上述内容不重复、不相似。
+`;
+            }
+
+            prompt += `
+
+请根据你的概念，提供一句独特的描述。只输出描述内容，不要输出任何其他文字。`;
+
+            return prompt;
+        };
+        
+        // 生成AI玩家描述
+        async function generateAIPlayerDescription(playerIndex) {
+            const player = gameState.players[playerIndex];
+            
+            if (player.eliminated) {
+                player.status = "已淘汰（观战中）";
+                updatePlayerCards();
+                return null;
+            }
+            
+            updateStatus(`${player.name}思考中...`, true);
+            gameState.currentPlayer = playerIndex;
+            player.status = "描述中";
+            updatePlayerCards();
+            
+            const prompt = aiPlayerPrompt(
+                playerIndex,
+                player.name, 
+                player.concept,
+                playerDescriptions
+            );
+            
+            try {
+                const apiKey = getApiKeyForPlayer(playerIndex);
+                let description = await callDeepSeekAPI(prompt, apiKey, 0.8, 100);
+                
+                description = description.replace(/^["']|["']$/g, '');
+                
+                addPlayerMessage(player.name, description);
+                
+                playerDescriptions.push({
+                    player: player.name,
+                    description: description
+                });
+                
+                player.status = "已完成描述";
+                updatePlayerCards();
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                return description;
+                
+            } catch (error) {
+                console.error('错误:', error);
+                addMessage("AI主持人", `${player.name}的描述生成失败: ${error.message}`, "ai");
+                player.status = "描述失败";
+                updatePlayerCards();
+                
+                if (!gameState.players[0].eliminated) {
+                    enableInput();
+                }
+                return null;
+            }
+        }
+        
+        // 获取玩家对应的API密钥
+        function getApiKeyForPlayer(playerIndex) {
+            switch(playerIndex) {
+                case 0: return CONFIG_DATA.a;
+                case 1: return CONFIG_DATA.b;
+                case 2: return CONFIG_DATA.c;
+                case 3: return CONFIG_DATA.d;
+                default: return CONFIG_DATA.a;
+            }
+        }
+        
+        // 继续下一个AI玩家的描述
+        async function continueAIPlayerDescriptions() {
+            const activeAIPlayers = [];
+            for (let i = 1; i <= 3; i++) {
+                if (!gameState.players[i].eliminated) {
+                    activeAIPlayers.push(i);
+                }
+            }
+            
+            for (const playerIndex of activeAIPlayers) {
+                if (gameState.players[playerIndex].eliminated) {
+                    gameState.players[playerIndex].status = "已淘汰（观战中）";
+                    updatePlayerCards();
+                    continue;
+                }
+                
+                await generateAIPlayerDescription(playerIndex);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            startVotingPhase();
+        }
+        
+        // 开始投票阶段
+        function startVotingPhase() {
+            gameState.gamePhase = 'voting';
+            // 初始化投票记录
+            gameState.currentVoteRecords = [];
+            
+            if (gameState.players[0].eliminated) {
+                gameState.players[0].status = "已淘汰（观战中）";
+                updateStatus("你已被淘汰，正在观战");
+                performAIVotes();
+            } else {
+                gameState.currentPlayer = 0;
+                gameState.players[0].status = "请投票";
+                updateStatus("请点击玩家卡片进行投票");
+                setupVotingEventListeners();
+            }
+            
+            updatePlayerCards();
+            
+            addSystemMessage("所有玩家已完成描述！现在开始投票，请选出你认为的卧底。被淘汰的玩家将进入观战状态。");
+        }
+        
+        // 设置投票事件监听器
+        function setupVotingEventListeners() {
+            removeVotingEventListeners();
+            
+            document.querySelectorAll('.player-card').forEach(card => {
+                const playerIndex = parseInt(card.getAttribute('data-player-index'));
+                if (playerIndex !== 0 && !gameState.players[playerIndex].eliminated) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', handleVote);
+                } else {
+                    card.classList.add('unavailable');
+                    card.style.cursor = 'not-allowed';
+                }
+            });
+        }
+        
+        // 移除投票事件监听器
+        function removeVotingEventListeners() {
+            document.querySelectorAll('.player-card').forEach(card => {
+                card.removeEventListener('click', handleVote);
+                card.removeEventListener('click', handleTieVote);
+            });
+        }
+        
+        // 处理投票
+        function handleVote(event) {
+            if (gameState.players[0].eliminated) {
+                addErrorMessage("你已被淘汰，不能参与投票");
+                return;
+            }
+            
+            if (gameState.gamePhase !== 'voting' || gameState.userVoted) return;
+            
+            const card = event.currentTarget;
+            const playerIndex = parseInt(card.getAttribute('data-player-index'));
+            
+            if (playerIndex === 0 || gameState.players[playerIndex].eliminated) {
+                addErrorMessage("不能投票给自己或已被淘汰的玩家");
+                return;
+            }
+            
+            gameState.players[playerIndex].votes++;
+            gameState.userVoted = true;
+            
+            updatePlayerCards();
+            
+            // 记录投票信息，但不立即显示
+            gameState.currentVoteRecords.push(`${gameState.players[0].name} 投票给了 ${gameState.players[playerIndex].name}`);
+            
+            removeVotingEventListeners();
+            
+            performAIVotes();
+        }
+        
+        // AI投票提示词
+        const aiVotePrompt = (playerIndex, playerDescriptions, activePlayerIndices) => {
+            const playerMapping = activePlayerIndices.map(idx => 
+                `player${idx} 对应玩家: ${gameState.players[idx].name}`
+            ).join('\n');
+            
+            const formattedDescriptions = playerDescriptions.map(desc => {
+                const playerIdx = gameState.players.findIndex(p => p.name === desc.player);
+                return `- player${playerIdx}: ${desc.description}`;
+            }).join('\n');
+            
+            return `你现在是化学卧底游戏中的玩家，你的编号是player${playerIndex}。
+
+玩家编号与名称对应关系:
+${playerMapping}
+
+当前活跃玩家编号: ${activePlayerIndices.map(idx => `player${idx}`).join('、')}
+
+以下是所有玩家的描述（使用player编号标识）：
+${formattedDescriptions}
+
+请根据这些描述，从活跃玩家中投票选出你认为的卧底。只输出卧底的player编号（如"player0"、"player1"等），不要输出任何其他文字。`;
+        };
+        
+        // 执行AI投票
+        async function performAIVotes() {
+            updateStatus("AI玩家投票中...", true);
+            
+            gameState.aiVotes = [];
+            
+            const activePlayerIndices = gameState.players
+                .map((p, idx) => ({idx, p}))
+                .filter(({p}) => !p.eliminated)
+                .map(({idx}) => idx);
+            
+            for (let i = 1; i <= 3; i++) {
+                if (!gameState.players[i].eliminated) {
+                    await generateAIVote(i, activePlayerIndices);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } else {
+                    gameState.players[i].status = "已淘汰（观战中）";
+                }
+            }
+            
+            updatePlayerCards();
+            
+            calculateVoteResult();
+        }
+        
+        // 生成AI投票
+        async function generateAIVote(playerIndex, activePlayerIndices) {
+            const player = gameState.players[playerIndex];
+            
+            if (player.eliminated) {
+                return;
+            }
+            
+            const prompt = aiVotePrompt(
+                playerIndex,
+                playerDescriptions,
+                activePlayerIndices
+            );
+            
+            try {
+                const apiKey = getApiKeyForPlayer(playerIndex);
+                let vote = await callDeepSeekAPI(prompt, apiKey, 0.7, 50);
+                
+                let votedPlayerIndex = -1;
+                const match = vote.match(/player(\d+)/);
+                if (match) {
+                    votedPlayerIndex = parseInt(match[1]);
+                }
+                
+                if (votedPlayerIndex === -1 || 
+                    votedPlayerIndex === playerIndex || 
+                    !activePlayerIndices.includes(votedPlayerIndex)) {
+                    const availablePlayers = activePlayerIndices.filter(idx => idx !== playerIndex);
+                    
+                    if (availablePlayers.length > 0) {
+                        votedPlayerIndex = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+                    } else {
+                        votedPlayerIndex = (playerIndex + 1) % 4;
+                    }
+                }
+                
+                gameState.players[votedPlayerIndex].votes++;
+                gameState.aiVotes.push({
+                    voter: player.name,
+                    voted: gameState.players[votedPlayerIndex].name
+                });
+                
+                // 记录投票信息，但不立即显示
+                gameState.currentVoteRecords.push(`${player.name} 投票给了 ${gameState.players[votedPlayerIndex].name}`);
+                
+                updatePlayerCards();
+                
+            } catch (error) {
+                console.error('错误:', error);
+                const availablePlayers = activePlayerIndices.filter(idx => idx !== playerIndex);
+                
+                if (availablePlayers.length > 0) {
+                    const votedPlayerIndex = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+                    gameState.players[votedPlayerIndex].votes++;
+                    gameState.aiVotes.push({
+                        voter: player.name,
+                        voted: gameState.players[votedPlayerIndex].name
+                    });
+                    
+                    // 记录投票信息，但不立即显示
+                    gameState.currentVoteRecords.push(`${player.name} 投票给了 ${gameState.players[votedPlayerIndex].name}`);
+                    updatePlayerCards();
+                }
+            }
+        }
+        
+        // 计算投票结果
+        function calculateVoteResult() {
+            updateStatus("计算投票结果...", true);
+            
+            const activePlayers = gameState.players
+                .map((player, index) => ({ 
+                    index, 
+                    name: player.name,
+                    votes: player.votes 
+                }))
+                .filter(({ index }) => !gameState.players[index].eliminated);
+            
+            if (activePlayers.length === 0) {
+                addErrorMessage("没有活跃玩家，无法计算投票结果");
+                return;
+            }
+            
+            const maxVotes = Math.max(...activePlayers.map(p => p.votes));
+            
+            const playersWithMaxVotes = activePlayers.filter(p => p.votes === maxVotes);
+            
+            if (playersWithMaxVotes.length > 1) {
+                const tiePlayerIndices = playersWithMaxVotes.map(p => p.index);
+                const tiePlayerVotes = playersWithMaxVotes.map(p => p.votes);
+                
+                handleSpecificTieCase(tiePlayerIndices, tiePlayerVotes, maxVotes);
+            } else {
+                // 重置平票计数，因为这不是平票
+                gameState.tieCount = 0;
+                setTimeout(() => {
+                    // 合并投票信息和淘汰信息到一条系统提示
+                    const voteSummary = gameState.currentVoteRecords.join('，');
+                    const eliminationMessage = `${voteSummary}；${gameState.players[playersWithMaxVotes[0].index].name} 获得${maxVotes}票，被淘汰！`;
+                    addSystemMessage(eliminationMessage);
+                    
+                    eliminatePlayer(playersWithMaxVotes[0].index);
+                }, 1000);
+            }
+        }
+        
+        // 分情况处理各种平票情况
+        function handleSpecificTieCase(tiePlayerIndices, tiePlayerVotes, maxVotes) {
+            setTimeout(() => {
+                const tiePlayerNames = tiePlayerIndices.map(idx => gameState.players[idx].name).join('、');
+                
+                // 检查是否达到最大平票次数
+                gameState.tieCount++; // 增加平票计数
+                
+                // 如果连续平票3次，随机淘汰一名平票选手
+                if (gameState.tieCount >= 3) {
+                    handleMaxTieRounds(tiePlayerIndices);
+                    return;
+                }
+                
+                // 第一回合平票情况处理
+                if (gameState.tieCount === 1) {
+                    // 情况1: 所有4名玩家各得1票
+                    if (tiePlayerIndices.length === 4 && maxVotes === 1) {
+                        // 合并投票信息和淘汰信息到一条系统提示
+                        const voteSummary = gameState.currentVoteRecords.join('，');
+                        const tieMessage = `${voteSummary}；${tiePlayerNames} 各获得1票，平票！`;
+                        addSystemMessage(tieMessage);
+                        
+                        handleFourPlayersTie(tiePlayerIndices);
+                    }
+                    // 情况2: 两名玩家各得2票（7种组合）
+                    else if (tiePlayerIndices.length === 2 && maxVotes === 2) {
+                        // 合并投票信息和淘汰信息到一条系统提示
+                        const voteSummary = gameState.currentVoteRecords.join('，');
+                        const tieMessage = `${voteSummary}；${tiePlayerNames} 各获得2票，平票！`;
+                        addSystemMessage(tieMessage);
+                        
+                        handleTwoPlayersTie(tiePlayerIndices);
+                    }
+                    // 其他未明确列出的第一回合平票情况
+                    else {
+                        // 合并投票信息和淘汰信息到一条系统提示
+                        const voteSummary = gameState.currentVoteRecords.join('，');
+                        const tieMessage = `${voteSummary}；${tiePlayerNames} 都获得${maxVotes}票，平票！`;
+                        addSystemMessage(tieMessage);
+                        
+                        handleGenericTie(tiePlayerIndices);
+                    }
+                }
+                // 第二回合平票情况处理
+                else if (gameState.tieCount === 2) {
+                    // 情况: 三名玩家各得1票（4种组合）
+                    if (tiePlayerIndices.length === 3 && maxVotes === 1) {
+                        // 合并投票信息和淘汰信息到一条系统提示
+                        const voteSummary = gameState.currentVoteRecords.join('，');
+                        const tieMessage = `${voteSummary}；${tiePlayerNames} 各获得1票，平票！`;
+                        addSystemMessage(tieMessage);
+                        
+                        handleThreePlayersTie(tiePlayerIndices);
+                    }
+                    // 其他第二回合平票情况
+                    else {
+                        // 合并投票信息和淘汰信息到一条系统提示
+                        const voteSummary = gameState.currentVoteRecords.join('，');
+                        const tieMessage = `${voteSummary}；${tiePlayerNames} 都获得${maxVotes}票，平票！`;
+                        addSystemMessage(tieMessage);
+                        
+                        handleGenericTie(tiePlayerIndices);
+                    }
+                }
+            }, 1000);
+        }
+        
+        // 处理4名玩家各得1票的平票情况
+        function handleFourPlayersTie(tiePlayerIndices) {
+            gameState.tiePlayers = tiePlayerIndices;
+            
+            updatePlayerCards();
+            
+            addSystemMessage("所有玩家都获得了相同票数，现在进入补充发言阶段。");
+            addSystemMessage("每位玩家需要进行一次补充描述，帮助大家更好地判断身份。");
+            
+            gameState.gamePhase = 'tie-describing';
+            updateStatus("所有玩家进行补充描述");
+            
+            setTimeout(() => {
+                startSequentialTieDescription(tiePlayerIndices, 0);
+            }, 1000);
+        }
+        
+        // 处理2名玩家各得2票的平票情况（7种组合）
+        function handleTwoPlayersTie(tiePlayerIndices) {
+            gameState.tiePlayers = tiePlayerIndices;
+            
+            updatePlayerCards();
+            
+            const playerNames = tiePlayerIndices.map(idx => gameState.players[idx].name);
+            const pairDescription = `${playerNames[0]}和${playerNames[1]}`;
+            
+            addSystemMessage(`${pairDescription}获得相同票数，现在进入补充发言阶段。`);
+            addSystemMessage(`只有${pairDescription}需要进行补充描述，其他玩家保持沉默。`);
+            
+            gameState.gamePhase = 'tie-describing';
+            updateStatus(`${pairDescription}进行补充描述`);
+            
+            setTimeout(() => {
+                startSequentialTieDescription(tiePlayerIndices, 0);
+            }, 1000);
+        }
+        
+        // 处理3名玩家各得1票的平票情况（4种组合）
+        function handleThreePlayersTie(tiePlayerIndices) {
+            gameState.tiePlayers = tiePlayerIndices;
+            
+            updatePlayerCards();
+            
+            const playerNames = tiePlayerIndices.map(idx => gameState.players[idx].name);
+            
+            addSystemMessage("这是第二回合平票，三位玩家获得相同票数。");
+            addSystemMessage(`${playerNames.join('、')}需要进行第二次补充描述，每人限时更短。`);
+            
+            gameState.gamePhase = 'tie-describing';
+            updateStatus("三位玩家进行第二次补充描述");
+            
+            setTimeout(() => {
+                startSequentialTieDescription(tiePlayerIndices, 0);
+            }, 1000);
+        }
+        
+        // 处理通用平票情况
+        function handleGenericTie(tiePlayerIndices) {
+            gameState.tiePlayers = tiePlayerIndices;
+            
+            updatePlayerCards();
+            
+            const tiePlayerNames = tiePlayerIndices.map(idx => gameState.players[idx].name).join('、');
+            
+            gameState.gamePhase = 'tie-describing';
+            updateStatus("平票玩家进行补充描述");
+            
+            setTimeout(() => {
+                startSequentialTieDescription(tiePlayerIndices, 0);
+            }, 1000);
+        }
+        
+        // 处理达到最大平票次数的情况 - 随机淘汰一名平票玩家
+        function handleMaxTieRounds(tiePlayerIndices) {
+            // 随机选择一名玩家淘汰
+            const randomIndex = Math.floor(Math.random() * tiePlayerIndices.length);
+            const eliminatedIndex = tiePlayerIndices[randomIndex];
+            
+            // 合并投票信息和淘汰信息到一条系统提示
+            const voteSummary = gameState.currentVoteRecords.join('，');
+            const eliminationMessage = `${voteSummary}；经过${gameState.tieCount}轮投票，仍然平票，达到最大限制，随机淘汰一名平票玩家：${gameState.players[eliminatedIndex].name}被淘汰！`;
+            addSystemMessage(eliminationMessage);
+            
+            // 重置平票状态
+            gameState.tiePlayers = [];
+            gameState.tieCount = 0;
+            
+            // 延迟执行淘汰，让玩家有时间阅读信息
+            setTimeout(() => {
+                eliminatePlayer(eliminatedIndex);
+            }, 2000);
+        }
+        
+        // 按顺序处理平票玩家的补充描述
+        async function startSequentialTieDescription(tiePlayerIndices, currentIndex) {
+            if (currentIndex >= tiePlayerIndices.length) {
+                resetVotingResults();
+                startTieVotingPhase();
+                return;
+            }
+            
+            const playerIndex = tiePlayerIndices[currentIndex];
+            
+            if (gameState.players[playerIndex].eliminated) {
+                startSequentialTieDescription(tiePlayerIndices, currentIndex + 1);
+                return;
+            }
+            
+            if (playerIndex === 0) {
+                addSystemMessage(`${gameState.players[playerIndex].name}，请进行补充描述。`);
+                gameState.currentPlayer = playerIndex;
+                gameState.players[playerIndex].status = "准备补充描述";
+                updateStatus("请进行补充描述");
+                updatePlayerCards();
+                enableInput();
+                
+                gameState.waitingForUserTieDescription = {
+                    tiePlayerIndices: tiePlayerIndices,
+                    nextIndex: currentIndex + 1
+                };
+            } 
+            else {
+                await generateTieDescription(playerIndex);
+                startSequentialTieDescription(tiePlayerIndices, currentIndex + 1);
+            }
+        }
+        
+        // 重置投票结果
+        function resetVotingResults() {
+            gameState.players.forEach(player => {
+                player.votes = 0;
+            });
+            
+            gameState.userVoted = false;
+            gameState.aiVotes = [];
+            
+            updatePlayerCards();
+            
+            addSystemMessage("所有玩家票数已重置，准备进入重新投票阶段。");
+        }
+        
+        // 生成平票玩家的额外描述
+        async function generateTieDescription(playerIndex) {
+            const player = gameState.players[playerIndex];
+            
+            if (player.eliminated) {
+                player.status = "已淘汰（观战中）";
+                updatePlayerCards();
+                return null;
+            }
+            
+            updateStatus(`${player.name}进行补充描述...`, true);
+            gameState.currentPlayer = playerIndex;
+            player.status = "补充描述中";
+            updatePlayerCards();
+            
+            const roundInfo = gameState.tieCount === 1 ? "第一次" : "第二次";
+            const timeInfo = gameState.tieCount === 1 ? "正常时间" : "更短时间";
+            
+            const prompt = `现在是化学卧底游戏的${roundInfo}平票补充描述阶段。你需要在${timeInfo}内提供补充描述。
+你和${gameState.tiePlayers.map(idx => gameState.players[idx].name).filter(name => name !== player.name).join('、')}得票相同。
+
+请根据你的概念"${player.concept}"，提供一句全新的、与之前描述不同的补充描述。
+记住：
+1. 不能直接说出完整的概念名称
+2. 描述要准确但也要有迷惑性
+3. 必须与所有之前的描述（包括你自己的）不同
+
+以下是所有之前的描述：
+${playerDescriptions.map(desc => `- ${desc.player}: ${desc.description}`).join('\n')}
+
+请提供一句独特的补充描述。只输出描述内容，不要输出任何其他文字。`;
+            
+            try {
+                const apiKey = getApiKeyForPlayer(playerIndex);
+                let description = await callDeepSeekAPI(prompt, apiKey, 0.8, 100);
+                
+                description = description.replace(/^["']|["']$/g, '');
+                
+                addPlayerMessage(player.name, description);
+                
+                playerDescriptions.push({
+                    player: player.name,
+                    description: description,
+                    isTieDescription: true,
+                    tieRound: gameState.tieCount
+                });
+                
+                player.status = "已完成补充描述";
+                updatePlayerCards();
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                return description;
+                
+            } catch (error) {
+                console.error('错误:', error);
+                addSystemMessage(`${player.name}的补充描述生成失败: ${error.message}`);
+                player.status = "补充描述失败";
+                updatePlayerCards();
+                return null;
+            }
+        }
+        
+        // 开始平票投票阶段
+        function startTieVotingPhase() {
+            gameState.gamePhase = 'tie-voting';
+            // 初始化投票记录
+            gameState.currentVoteRecords = [];
+            
+            if (gameState.players[0].eliminated) {
+                gameState.players[0].status = "已淘汰（观战中）";
+                updateStatus("你已被淘汰，正在观战");
+                performAITieVotes();
+            } else {
+                gameState.currentPlayer = 0;
+                gameState.players[0].status = "请重新投票";
+                updateStatus("请为平票玩家重新投票");
+                setupTieVotingEventListeners();
+            }
+            
+            updatePlayerCards();
+            
+            const tiePlayerNames = gameState.tiePlayers.map(idx => gameState.players[idx].name).join('、');
+            if (gameState.tiePlayers.length === 4) {
+                addSystemMessage("所有玩家已完成补充描述！请从所有玩家中重新投票。");
+            } else if (gameState.tiePlayers.length === 3) {
+                addSystemMessage(`三位玩家已完成第二次补充描述！请从${tiePlayerNames}中重新投票。`);
+            } else {
+                addSystemMessage(`${tiePlayerNames}已完成补充描述！请从他们中重新投票。`);
+            }
+        }
+        
+        // 设置平票投票事件监听器
+        function setupTieVotingEventListeners() {
+            removeVotingEventListeners();
+            
+            document.querySelectorAll('.player-card').forEach(card => {
+                const playerIndex = parseInt(card.getAttribute('data-player-index'));
+                if (gameState.tiePlayers.includes(playerIndex) && !gameState.players[playerIndex].eliminated) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', handleTieVote);
+                    card.classList.add('voting');
+                } else {
+                    card.classList.add('unavailable');
+                    card.style.cursor = 'not-allowed';
+                }
+            });
+        }
+        
+        // 处理平票投票
+        function handleTieVote(event) {
+            if (gameState.players[0].eliminated) {
+                addErrorMessage("你已被淘汰，不能参与投票");
+                return;
+            }
+            
+            if (gameState.gamePhase !== 'tie-voting' || gameState.userVoted) return;
+            
+            const card = event.currentTarget;
+            const playerIndex = parseInt(card.getAttribute('data-player-index'));
+            
+            if (!gameState.tiePlayers.includes(playerIndex) || gameState.players[playerIndex].eliminated) {
+                addErrorMessage("只能投票给平票且未被淘汰的玩家");
+                return;
+            }
+            
+            gameState.players[playerIndex].votes++;
+            gameState.userVoted = true;
+            
+            updatePlayerCards();
+            
+            // 记录投票信息，但不立即显示
+            gameState.currentVoteRecords.push(`${gameState.players[0].name} 投票给了 ${gameState.players[playerIndex].name}`);
+            
+            removeVotingEventListeners();
+            
+            performAITieVotes();
+        }
+        
+        // 执行AI平票投票
+        async function performAITieVotes() {
+            updateStatus("AI玩家重新投票中...", true);
+            
+            gameState.aiVotes = [];
+            
+            const activePlayerIndices = gameState.players
+                .map((p, idx) => ({idx, p}))
+                .filter(({p}) => !p.eliminated)
+                .map(({idx}) => idx);
+            
+            for (let i = 1; i <= 3; i++) {
+                if (!gameState.players[i].eliminated) {
+                    await generateAITieVote(i, activePlayerIndices);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } else {
+                    gameState.players[i].status = "已淘汰（观战中）";
+                }
+            }
+            
+            updatePlayerCards();
+            
+            calculateVoteResult();
+        }
+        
+        // 生成AI平票投票
+        async function generateAITieVote(playerIndex, activePlayerIndices) {
+            const player = gameState.players[playerIndex];
+            
+            if (player.eliminated) {
+                return;
+            }
+            
+            const formattedDescriptions = playerDescriptions.map(desc => {
+                const playerIdx = gameState.players.findIndex(p => p.name === desc.player);
+                return `- player${playerIdx}: ${desc.description}`;
+            }).join('\n');
+            
+            const playerMapping = activePlayerIndices.map(idx => 
+                `player${idx} 对应玩家: ${gameState.players[idx].name}`
+            ).join('\n');
+            
+            const prompt = `现在是化学卧底游戏的平票重新投票阶段。你是player${playerIndex}。
+
+玩家编号与名称对应关系:
+${playerMapping}
+
+当前平票玩家编号: ${gameState.tiePlayers.map(idx => `player${idx}`).join('、')}
+
+以下是所有玩家的描述（包括补充描述）：
+${formattedDescriptions}
+
+请根据这些描述，从平票玩家中投票选出你认为的卧底。只输出卧底的player编号，不要输出任何其他文字。`;
+            
+            try {
+                const apiKey = getApiKeyForPlayer(playerIndex);
+                let vote = await callDeepSeekAPI(prompt, apiKey, 0.7, 50);
+                
+                let votedPlayerIndex = -1;
+                const match = vote.match(/player(\d+)/);
+                if (match) {
+                    votedPlayerIndex = parseInt(match[1]);
+                }
+                
+                if (votedPlayerIndex === -1 || 
+                    !gameState.tiePlayers.includes(votedPlayerIndex) || 
+                    gameState.players[votedPlayerIndex].eliminated) {
+                    votedPlayerIndex = gameState.tiePlayers[Math.floor(Math.random() * gameState.tiePlayers.length)];
+                }
+                
+                gameState.players[votedPlayerIndex].votes++;
+                gameState.aiVotes.push({
+                    voter: player.name,
+                    voted: gameState.players[votedPlayerIndex].name,
+                    isTieVote: true
+                });
+                
+                // 记录投票信息，但不立即显示
+                gameState.currentVoteRecords.push(`${player.name} 投票给了 ${gameState.players[votedPlayerIndex].name}`);
+                
+                updatePlayerCards();
+                
+            } catch (error) {
+                console.error('错误:', error);
+                const votedPlayerIndex = gameState.tiePlayers[Math.floor(Math.random() * gameState.tiePlayers.length)];
+                gameState.players[votedPlayerIndex].votes++;
+                gameState.aiVotes.push({
+                    voter: player.name,
+                    voted: gameState.players[votedPlayerIndex].name,
+                    isTieVote: true
+                });
+                
+                // 记录投票信息，但不立即显示
+                gameState.currentVoteRecords.push(`${player.name} 投票给了 ${gameState.players[votedPlayerIndex].name}`);
+                updatePlayerCards();
+            }
+        }
+        
+        // 淘汰玩家
+        function eliminatePlayer(playerIndex) {
+            const player = gameState.players[playerIndex];
+            player.eliminated = true;
+            player.status = "已淘汰（观战中）";
+            
+            gameState.tiePlayers = [];
+            
+            updatePlayerCards();
+            
+            if (playerIndex === 0) {
+                disableInput();
+            }
+            
+            checkGameEnd(playerIndex);
+        }
+        
+        // 揭示用户角色
+        function revealUserRole() {
+            if (!gameState.roleRevealed) {
+                const userRole = gameState.players[0].role;
+                myRole.textContent = userRole;
+                myRole.className = `concept-role role-${userRole === '化学家' ? 'chemist' : 'undercover'} revealed`;
+                gameState.roleRevealed = true;
+                
+                addSystemMessage(`${gameState.players[0].name}的真实身份是：${userRole}！`);
+            }
+        }
+        
+        // 检查游戏是否结束
+        function checkGameEnd(eliminatedPlayerIndex) {
+            const eliminatedPlayer = gameState.players[eliminatedPlayerIndex];
+            
+            revealUserRole();
+            
+            // 判断玩家是否获胜
+            let playerWon = false;
+            
+            if (eliminatedPlayer.role === '卧底') {
+                addSystemMessage(`恭喜！${eliminatedPlayer.name} 是卧底，化学家获胜！`);
+                gameState.gamePhase = 'ended';
+                updateStatus("游戏结束 - 化学家获胜");
+                
+                // 玩家是化学家且卧底被淘汰，玩家获胜
+                playerWon = gameState.players[0].role === '化学家';
+                
+            } else {
+                const undercoverStillAlive = gameState.players.some(
+                    (player, index) => index !== eliminatedPlayerIndex && 
+                    !player.eliminated && 
+                    player.role === '卧底'
+                );
+                
+                if (undercoverStillAlive) {
+                    addSystemMessage(`${eliminatedPlayer.name} 是化学家，卧底仍然在游戏中！`);
+                    const alivePlayers = gameState.players.filter(player => !player.eliminated);
+                    if (alivePlayers.length <= 2) {
+                        const undercover = gameState.players.find(player => 
+                            !player.eliminated && player.role === '卧底'
+                        );
+                        addSystemMessage(`游戏结束！${undercover.name} 是卧底，卧底获胜！`);
+                        gameState.gamePhase = 'ended';
+                        updateStatus("游戏结束 - 卧底获胜");
+                        
+                        // 玩家是卧底且坚持到最后，玩家获胜
+                        playerWon = gameState.players[0].role === '卧底';
+                        
+                    } else {
+                        setTimeout(() => {
+                            addSystemMessage("游戏继续，请开始新一轮描述。");
+                            resetForNewRound();
+                        }, 2000);
+                        return; // 游戏继续，不显示胜利界面
+                    }
+                } else {
+                    addSystemMessage("游戏结束！所有卧底已被淘汰，化学家获胜！");
+                    gameState.gamePhase = 'ended';
+                    updateStatus("游戏结束 - 化学家获胜");
+                    
+                    // 玩家是化学家且所有卧底被淘汰，玩家获胜
+                    playerWon = gameState.players[0].role === '化学家';
+                }
+            }
+            
+            // 更新胜利计数
+            updateWinCounts(playerWon);
+            
+            // 保存玩家获胜状态
+            gameState.playerWon = playerWon;
+            
+            // 显示知识点总结，然后显示胜利界面
+            setTimeout(() => {
+                showKnowledgeSummary().then(() => {
+                    setTimeout(() => {
+                        // 修改：无论胜负都显示胜利界面
+                        showVictoryScreen(playerWon);
+                    }, 2000);
+                });
+            }, 2000);
+        }
+        
+        // 更新胜利计数
+        function updateWinCounts(isPlayerWin) {
+            if (isPlayerWin) {
+                gameState.playerWins++;
+            }
+            
+            gameState.totalRounds++;
+        }
+        
+        // 修改：显示胜利界面，根据玩家是否获胜显示不同内容
+        function showVictoryScreen(isPlayerWin) {
+            // 更新统计数据
+            totalWins.textContent = gameState.playerWins;
+            totalRounds.textContent = gameState.totalRounds;
+            
+            // 计算胜率
+            const winRateValue = gameState.totalRounds > 0 
+                ? Math.round((gameState.playerWins / gameState.totalRounds) * 100) 
+                : 0;
+            winRate.textContent = `${winRateValue}%`;
+            
+            if (isPlayerWin) {
+                victoryTitle.textContent = "🎉 恭喜获胜！";
+                victoryMessage.textContent = `恭喜${gameState.players[0].name}！你已获得${gameState.playerWins}场胜利！`;
+                saveVictoryBtn.style.display = 'flex';
+                victoryStats.style.display = 'flex';
+            } else {
+                victoryTitle.textContent = "💫 游戏结束";
+                victoryMessage.textContent = "游戏结束，下次努力！继续学习化学知识，争取下次获胜！";
+                saveVictoryBtn.style.display = 'none';
+                victoryStats.style.display = 'flex';
+            }
+            victoryScreen.style.display = 'flex';
+        }
+        
+        // 关闭胜利界面
+        function closeVictoryScreen() {
+            victoryScreen.style.display = 'none';
+            resetGameState();
+        }
+        
+        // 重置游戏状态但保留聊天记录
+        function resetGameState() {
+            gameState = {
+                currentPlayer: 0,
+                players: [
+                    { name: gameState.players[0].name, avatar: '👨‍🔬', status: '等待描述', concept: '', role: '', votes: 0, eliminated: false },
+                    { name: '实验小李', avatar: '👩‍🔬', status: '等待中', concept: '', role: '', votes: 0, eliminated: false },
+                    { name: '反应小张', avatar: '🧑‍🔬', status: '等待中', concept: '', role: '', votes: 0, eliminated: false },
+                    { name: '元素小赵', avatar: '👨‍💼', status: '等待中', concept: '', role: '', votes: 0, eliminated: false }
+                ],
+                gamePhase: 'setup',
+                concepts: [],
+                usedConceptPairs: [...gameState.usedConceptPairs],
+                currentAIPlayerIndex: 1,
+                userVoted: false,
+                aiVotes: [],
+                roleRevealed: false,
+                playerWins: gameState.playerWins,
+                totalRounds: gameState.totalRounds,
+                tiePlayers: [],
+                tieRound: 0,
+                maxTieRounds: 3,
+                roundNumber: gameState.roundNumber + 1,
+                waitingForUserTieDescription: null,
+                selectedKnowledgePoints: gameState.selectedKnowledgePoints,
+                currentConcepts: {},
+                knowledgeSummary: '',
+                isMobile: gameState.isMobile,
+                tieCount: 0,
+                playerWon: false,
+                currentVoteRecords: []
+            };
+            
+            playerDescriptions = [];
+            
+            const randomPair = selectUnusedConceptPair();
+            const undercoverIndex = Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < 4; i++) {
+                if (i === undercoverIndex) {
+                    gameState.players[i].concept = randomPair.undercover;
+                    gameState.players[i].role = '卧底';
+                } else {
+                    gameState.players[i].concept = randomPair.chemist;
+                    gameState.players[i].role = '化学家';
+                }
+            }
+            
+            gameState.currentConcepts = {
+                chemist: randomPair.chemist,
+                undercover: randomPair.undercover
+            };
+            
+            myConcept.textContent = gameState.players[0].concept;
+            myRole.textContent = "游戏结束后揭示";
+            myRole.className = "concept-role";
+            
+            addSystemMessage(`🔄 第${gameState.roundNumber}回合开始！`);
+            updateStatus("游戏初始化中", true);
+            
+            setTimeout(() => {
+                generateKnowledgeSummary(randomPair.chemist, randomPair.undercover);
+                
+                addSystemMessage(`欢迎回到化学卧底！第${gameState.roundNumber}回合开始！你的概念是"${gameState.players[0].concept}"。请开始你的描述。`);
+                updateStatus("请描述你的概念");
+                updatePlayerCards();
+                
+                enableInput();
+            }, 1500);
+        }
+        
+        // 显示知识点总结
+        function showSummary() {
+            summaryText.textContent = gameState.knowledgeSummary;
+            summaryModal.style.display = 'flex';
+        }
+        
+        // 关闭知识点总结
+        function closeSummary() {
+            summaryModal.style.display = 'none';
+        }
+        
+        // 保存胜利记录
+        function saveVictory() {
+            const playerName = gameState.players[0].name;
+            alert(`胜利记录已保存！\n玩家: ${playerName}\n胜利次数: ${gameState.playerWins}\n总局数: ${gameState.totalRounds}`);
+        }
+        
+        // 保存知识点总结
+        function saveSummary() {
+            const summary = gameState.knowledgeSummary;
+            const blob = new Blob([summary], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '化学知识点总结.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('知识点总结已保存为文本文件！');
+        }
+        
+        // 选择未使用过的概念对
+        function selectUnusedConceptPair() {
+            const conceptPairs = getConceptPairsFromSelectedKnowledge();
+            
+            const unusedPairs = conceptPairs.filter(pair => 
+                !gameState.usedConceptPairs.some(used => 
+                    (used.chemist === pair.chemist && used.undercover === pair.undercover) ||
+                    (used.chemist === pair.undercover && used.undercover === pair.chemist)
+                )
+            );
+            
+            if (unusedPairs.length === 0) {
+                gameState.usedConceptPairs = [];
+                return selectUnusedConceptPair();
+            }
+            
+            const randomIndex = Math.floor(Math.random() * unusedPairs.length);
+            const selectedPair = unusedPairs[randomIndex];
+            
+            gameState.usedConceptPairs.push(selectedPair);
+            
+            return selectedPair;
+        }
+        
+        // 开始新回合
+        function startNewRound() {
+            gameState.roundNumber++;
+            
+            gameState.players.forEach(player => {
+                player.eliminated = false;
+                player.votes = 0;
+                player.status = player.name === gameState.players[0].name ? '等待描述' : '等待中';
+            });
+            
+            gameState.gamePhase = 'setup';
+            gameState.currentPlayer = 0;
+            gameState.currentAIPlayerIndex = 1;
+            gameState.userVoted = false;
+            gameState.aiVotes = [];
+            gameState.roleRevealed = false;
+            gameState.tiePlayers = [];
+            gameState.tieRound = 0;
+            gameState.tieCount = 0;
+            gameState.playerWon = false;
+            gameState.currentVoteRecords = [];
+            
+            playerDescriptions = [];
+            
+            const randomPair = selectUnusedConceptPair();
+            const undercoverIndex = Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < 4; i++) {
+                if (i === undercoverIndex) {
+                    gameState.players[i].concept = randomPair.undercover;
+                    gameState.players[i].role = '卧底';
+                } else {
+                    gameState.players[i].concept = randomPair.chemist;
+                    gameState.players[i].role = '化学家';
+                }
+            }
+            
+            myConcept.textContent = gameState.players[0].concept;
+            myRole.textContent = "游戏结束后揭示";
+            myRole.className = "concept-role";
+            
+            updatePlayerCards();
+            
+            addSystemMessage(`第${gameState.roundNumber}回合开始！你的概念是"${gameState.players[0].concept}"。请开始你的描述。`);
+            updateStatus("请描述你的概念");
+            
+            if (!gameState.players[0].eliminated) {
+                enableInput();
+            }
+        }
+        
+        // 重置状态以便开始新一轮
+        function resetForNewRound() {
+            gameState.players.forEach(player => {
+                player.votes = 0;
+            });
+            gameState.userVoted = false;
+            gameState.aiVotes = [];
+            gameState.tieCount = 0;
+            gameState.playerWon = false;
+            gameState.currentVoteRecords = [];
+            
+            playerDescriptions = [];
+            
+            for (let i = 0; i < 4; i++) {
+                if (!gameState.players[i].eliminated) {
+                    gameState.players[i].status = i === 0 ? "等待描述" : "等待中";
+                } else {
+                    gameState.players[i].status = "已淘汰（观战中）";
+                }
+            }
+            
+            gameState.gamePhase = 'describing';
+            gameState.currentPlayer = 0;
+            gameState.currentAIPlayerIndex = 1;
+            gameState.roleRevealed = false;
+            gameState.tiePlayers = [];
+            gameState.tieRound = 0;
+            
+            updatePlayerCards();
+            
+            if (!gameState.players[0].eliminated) {
+                updateStatus("请描述你的概念");
+                enableInput();
+            } else {
+                updateStatus("你已被淘汰，正在观战");
+                setTimeout(continueAIPlayerDescriptions, 1000);
+            }
+        }
+        
+        // 启用输入框
+        function enableInput() {
+            if (!gameState.players[0].eliminated) {
+                playerInput.disabled = false;
+                sendBtn.disabled = false;
+                playerInput.focus();
+            }
+        }
+        
+        // 禁用输入框
+        function disableInput() {
+            playerInput.disabled = true;
+            sendBtn.disabled = true;
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            if (gameState.players[0].eliminated) {
+                addErrorMessage("你已被淘汰，不能发言");
+                return;
+            }
+            
+            const userMessage = playerInput.value.trim();
+            if (!userMessage) return;
+            
+            const validation = validateDescription(userMessage, gameState.players[0].concept);
+            if (!validation.isValid) {
+                addErrorMessage(validation.error);
+                playerInput.classList.add('error');
+                setTimeout(() => {
+                    playerInput.classList.remove('error');
+                }, 2000);
+                return;
+            }
+            
+            disableInput();
+            
+            addMessage(gameState.players[0].name, userMessage, "user");
+            playerDescriptions.push({ 
+                player: gameState.players[0].name, 
+                description: userMessage,
+                isTieDescription: gameState.gamePhase === 'tie-describing'
+            });
+            playerInput.value = '';
+            
+            gameState.players[0].status = gameState.gamePhase === 'tie-describing' ? 
+                "已完成补充描述" : "已完成描述";
+            updatePlayerCards();
+            
+            if (gameState.gamePhase === 'tie-describing' && gameState.waitingForUserTieDescription) {
+                const { tiePlayerIndices, nextIndex } = gameState.waitingForUserTieDescription;
+                gameState.waitingForUserTieDescription = null;
+                startSequentialTieDescription(tiePlayerIndices, nextIndex);
+                return;
+            }
+            
+            updateStatus("AI玩家描述中");
+            setTimeout(continueAIPlayerDescriptions, 1000);
+        }
+        
+        // 开始新游戏
+        function startNewGame() {
+            const playerName = playerNameInput.value.trim();
+            if (!playerName) {
+                alert("请输入你的昵称或姓名！");
+                return;
+            }
+            
+            const selectedPoints = getSelectedKnowledgePoints();
+            if (selectedPoints.length === 0) {
+                alert("请至少选择一个知识点！");
+                return;
+            }
+            
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            
+            gameState.players[0].name = playerName;
+            player1Name.textContent = playerName;
+            
+            gameState.selectedKnowledgePoints = selectedPoints;
+            
+            gameState = {
+                currentPlayer: 0,
+                players: [
+                    { name: playerName, avatar: '👨‍🔬', status: '等待描述', concept: '', role: '', votes: 0, eliminated: false },
+                    { name: '实验小李', avatar: '👩‍🔬', status: '等待中', concept: '', role: '', votes: 0, eliminated: false },
+                    { name: '反应小张', avatar: '🧑‍🔬', status: '等待中', concept: '', role: '', votes: 0, eliminated: false },
+                    { name: '元素小赵', avatar: '👨‍💼', status: '等待中', concept: '', role: '', votes: 0, eliminated: false }
+                ],
+                gamePhase: 'setup',
+                concepts: [],
+                usedConceptPairs: [],
+                currentAIPlayerIndex: 1,
+                userVoted: false,
+                aiVotes: [],
+                roleRevealed: false,
+                playerWins: 0,
+                totalRounds: 0,
+                tiePlayers: [],
+                tieRound: 0,
+                maxTieRounds: 3,
+                roundNumber: 1,
+                waitingForUserTieDescription: null,
+                selectedKnowledgePoints: selectedPoints,
+                currentConcepts: {},
+                knowledgeSummary: '',
+                isMobile: window.innerWidth <= 768,
+                tieCount: 0,
+                playerWon: false,
+                currentVoteRecords: []
+            };
+            
+            playerDescriptions = [];
+            gameLog.innerHTML = '';
+            
+            const randomPair = selectUnusedConceptPair();
+            const undercoverIndex = Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < 4; i++) {
+                if (i === undercoverIndex) {
+                    gameState.players[i].concept = randomPair.undercover;
+                    gameState.players[i].role = '卧底';
+                } else {
+                    gameState.players[i].concept = randomPair.chemist;
+                    gameState.players[i].role = '化学家';
+                }
+            }
+            
+            gameState.currentConcepts = {
+                chemist: randomPair.chemist,
+                undercover: randomPair.undercover
+            };
+            
+            myConcept.textContent = gameState.players[0].concept;
+            myRole.textContent = "游戏结束后揭示";
+            myRole.className = "concept-role";
+            
+            addSystemMessage("🔄 游戏开始！");
+            updateStatus("游戏初始化中", true);
+            
+            setTimeout(() => {
+                generateKnowledgeSummary(randomPair.chemist, randomPair.undercover);
+                
+                addSystemMessage(`欢迎来到化学卧底！第${gameState.roundNumber}回合开始！你的概念是"${gameState.players[0].concept}"。请开始你的描述。`);
+                updateStatus("请描述你的概念");
+                updatePlayerCards();
+                
+                if (gameState.isMobile) {
+                    collapseVotingCards();
+                }
+                
+                enableInput();
+            }, 1500);
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            if (confirm("确定要重新开始游戏吗？当前游戏进度将被清空。")) {
+                gameState.playerWins = 0;
+                gameState.totalRounds = 0;
+                gameState.usedConceptPairs = [];
+                startNewGame();
+            }
+        }
+        
+        // 清空对话
+        function clearChat() {
+            if (confirm("确定要清空对话记录吗？")) {
+                gameLog.innerHTML = '';
+                addSystemMessage("对话已清空。游戏可以继续。");
+            }
+        }
+        
+        // 显示游戏规则
+        function showRules() {
+            alert(`化学卧底游戏规则：
+
+1. 玩家依次用一句话描述自己拿到的化学概念，描述不能直接说出完整的概念名称，所有玩家描述完毕后进行投票，找出卧底
+2. 平票时，平票玩家进行额外描述，然后重新投票
+3. 如果平票发生3次，随机淘汰一名平票选手
+4. 卧底要尽量模仿化学家的描述，避免被发现
+5. 获得1场胜利后，结束游戏`);
+        }
+        
+        // 按回车键发送消息
+        playerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !sendBtn.disabled) {
+                sendMessage();
+            }
+        });
+        
+        // 首页输入姓名时支持Enter键确认
+        playerNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startNewGame();
+            }
+        });
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            updateStatus("等待游戏开始");
+            disableInput();
+            initializeKnowledgeSelection();
+            
+            window.addEventListener('resize', function() {
+                gameState.isMobile = window.innerWidth <= 768;
+            });
+        };
+    </script>
+</body>
+</html>
